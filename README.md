@@ -91,3 +91,8 @@ Returns `204 No Content`
 Delete note (id: `b6/22/7f/2ce9505bef907fa98075f852b6`)
 
     curl -X DELETE -v http://127.0.0.1:8080/note/b6/22/7f/2ce9505bef907fa98075f852b6
+
+
+## Sample note
+
+![Screenshot 2023-06-07 230208](https://github.com/reddec/api-notes/assets/6597086/c5b7b999-ea25-4fb2-996d-bf8f6a6e9c0d)
