@@ -44,7 +44,10 @@ func (l *Local) Set(_ context.Context, uid string, content io.Reader) error {
 	if err := tmp.Close(); err != nil {
 		return fmt.Errorf("close temp: %w", err)
 	}
-	return os.Rename(tmp.Name(), p)
+	if err := os.Rename(tmp.Name(), p); err != nil {
+		return fmt.Errorf("rename: %w", err)
+	}
+	return os.Chmod(p, 0755)
 }
 
 func (l *Local) Delete(_ context.Context, uid string) error {
