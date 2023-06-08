@@ -40,6 +40,9 @@ func (srv *Server) storeNote(ctx context.Context, req api.OptDraftMultipart, id 
 	}
 
 	for _, attachment := range req.Value.Attachment {
+		if attachment.Name == "index.html" {
+			continue
+		}
 		subID := filepath.Join(id, attachment.Name)
 		if err := srv.Storage.Set(ctx, subID, attachment.File); err != nil {
 			return fmt.Errorf("store attachment %s: %w", attachment.Name, err)
