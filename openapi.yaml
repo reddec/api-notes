@@ -94,6 +94,10 @@ components:
           type: string
           description: Note body
           example: This is long text
+        author:
+          type: string
+          description: Optional (and not verifiable) author of note
+          example: RedDec
         hide_attachments:
           type: boolean
           default: false

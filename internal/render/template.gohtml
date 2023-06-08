@@ -23,7 +23,12 @@
         </article>
     {{- end}}
     <footer>
-        <p>{{now.UTC.Format "02 Jan 2006 15:04:05"}} UTC</p>
+        <p>
+            {{now.UTC.Format "02 Jan 2006 15:04:05"}} UTC
+            {{- with .Author}}
+                &copy; {{.}}
+            {{- end}}
+        </p>
     </footer>
 </main>
 </body>

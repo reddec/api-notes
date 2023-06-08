@@ -50,13 +50,14 @@ type Renderer struct {
 	engine goldmark.Markdown
 }
 
-func (r *Renderer) Render(title, content string, attachments []string) ([]byte, error) {
+func (r *Renderer) Render(title, content string, author string, attachments []string) ([]byte, error) {
 	var out bytes.Buffer
 	if err := r.engine.Convert([]byte(content), &out); err != nil {
 		return nil, fmt.Errorf("render: %w", err)
 	}
 	vd := &viewData{
 		Title:       title,
+		Author:      author,
 		Style:       template.CSS(style),
 		HTML:        template.HTML(out.String()),
 		Attachments: attachments,
@@ -71,6 +72,7 @@ func (r *Renderer) Render(title, content string, attachments []string) ([]byte, 
 
 type viewData struct {
 	Title       string
+	Author      string
 	Attachments []string
 	Style       template.CSS
 	HTML        template.HTML

@@ -115,6 +115,38 @@ func (s *Server) decodeCreateNoteRequest(r *http.Request) (
 		}
 		{
 			cfg := uri.QueryParameterDecodingConfig{
+				Name:    "author",
+				Style:   uri.QueryStyleForm,
+				Explode: true,
+			}
+			if err := q.HasParam(cfg); err == nil {
+				if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+					var requestDotAuthorVal string
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToString(val)
+						if err != nil {
+							return err
+						}
+
+						requestDotAuthorVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					request.Author.SetTo(requestDotAuthorVal)
+					return nil
+				}); err != nil {
+					return req, close, errors.Wrap(err, "decode \"author\"")
+				}
+			}
+		}
+		{
+			cfg := uri.QueryParameterDecodingConfig{
 				Name:    "hide_attachments",
 				Style:   uri.QueryStyleForm,
 				Explode: true,
@@ -269,6 +301,38 @@ func (s *Server) decodeUpdateNoteRequest(r *http.Request) (
 				}
 			} else {
 				return req, close, errors.Wrap(err, "query")
+			}
+		}
+		{
+			cfg := uri.QueryParameterDecodingConfig{
+				Name:    "author",
+				Style:   uri.QueryStyleForm,
+				Explode: true,
+			}
+			if err := q.HasParam(cfg); err == nil {
+				if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+					var requestDotAuthorVal string
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToString(val)
+						if err != nil {
+							return err
+						}
+
+						requestDotAuthorVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					request.Author.SetTo(requestDotAuthorVal)
+					return nil
+				}); err != nil {
+					return req, close, errors.Wrap(err, "decode \"author\"")
+				}
 			}
 		}
 		{

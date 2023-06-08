@@ -39,7 +39,7 @@ func (srv *Server) storeNote(ctx context.Context, req *api.DraftMultipart, id st
 			attachments = append(attachments, name.Name)
 		}
 	}
-	html, err := srv.Renderer.Render(req.Title, req.Text, attachments)
+	html, err := srv.Renderer.Render(req.Title, req.Text, req.Author.Value, attachments)
 	if err != nil {
 		return fmt.Errorf("render HTML: %w", err)
 	}

@@ -15,6 +15,8 @@ type DraftMultipart struct {
 	Title string `json:"title"`
 	// Note body.
 	Text string `json:"text"`
+	// Optional (and not verifiable) author of note.
+	Author OptString `json:"author"`
 	// Do not make list of attachments.
 	HideAttachments OptBool `json:"hide_attachments"`
 	// File attachment.
@@ -29,6 +31,11 @@ func (s *DraftMultipart) GetTitle() string {
 // GetText returns the value of Text.
 func (s *DraftMultipart) GetText() string {
 	return s.Text
+}
+
+// GetAuthor returns the value of Author.
+func (s *DraftMultipart) GetAuthor() OptString {
+	return s.Author
 }
 
 // GetHideAttachments returns the value of HideAttachments.
@@ -49,6 +56,11 @@ func (s *DraftMultipart) SetTitle(val string) {
 // SetText sets the value of Text.
 func (s *DraftMultipart) SetText(val string) {
 	s.Text = val
+}
+
+// SetAuthor sets the value of Author.
+func (s *DraftMultipart) SetAuthor(val OptString) {
+	s.Author = val
 }
 
 // SetHideAttachments sets the value of HideAttachments.
@@ -143,6 +155,52 @@ func (o OptBool) Get() (v bool, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptBool) Or(d bool) bool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptString returns new OptString with value set to v.
+func NewOptString(v string) OptString {
+	return OptString{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptString is optional string.
+type OptString struct {
+	Value string
+	Set   bool
+}
+
+// IsSet returns true if OptString was set.
+func (o OptString) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptString) Reset() {
+	var v string
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptString) SetTo(v string) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptString) Get() (v string, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptString) Or(d string) string {
 	if v, ok := o.Get(); ok {
 		return v
 	}
