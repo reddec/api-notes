@@ -23,74 +23,37 @@ Supported markdown extensions:
 - Docker: `ghcr.io/reddec/api-notes:latest`
 - Go: `go install github.com/reddec/api-notes/cmd/...@latest`
 
-## Configuration
+## Usage
 
-| Environment variable | Default                 | Description                  |
-|----------------------|-------------------------|------------------------------|
-| `PUBLIC_URL`         | `http://127.0.0.1:8080` | Public URL to where redirect |
-| `BIND`               | `127.0.0.1:8080`        | Binding address              |
-| `DIR`                | `notes`                 | Directory for notes          |
+```
+Usage:
+  api-notes [OPTIONS] serve [serve-OPTIONS]
+
+Help Options:
+  -h, --help            Show this help message
+
+[serve command options]
+      -u, --public-url= Public URL for redirects (default: http://127.0.0.1:8080) [$API_NOTES_PUBLIC_URL]
+      -b, --bind=       API binding address (default: 127.0.0.1:8080) [$API_NOTES_BIND]
+      -d, --dir=        Directory to store notes (default: notes) [$API_NOTES_DIR]
+      -t, --token=      Authorization token, empty means any token can be usedauth is disabled [$API_NOTES_TOKEN]
+
+```
 
 Differences in docker version
 
 | Environment variable | Default        | Description         |
 |----------------------|----------------|---------------------|
-| `BIND`               | `0.0.0.0:8080` | Binding address     |
-| `DIR`                | `/data`        | Directory for notes |
+| `API_NOTES_BIND`     | `0.0.0.0:8080` | Binding address     |
+| `API_NOTES_DIR`      | `/data`        | Directory for notes |
 
 ## API
 
-Supported content type:
+### Example
 
-- `application/json`: only `title` (string) and `text` (string) supported
-- `application/x-www-form-urlencoded`: only `title` and `text` field supported
-- `multipart/form-data`: `title`, `text` and any file(s) supported
+Create note
 
-> Note: note ID should not be escaped
-
-### Create note
-
-    POST /note
-
-Returns `303 See Other` with public link in header `Location`, and ID in `X-Correlation-Id`.
-
-**Example**
-
-Create with basic form
-
-    curl -v -d 'title=hello&text=this is text' http://127.0.0.1:8080/note
-
-Create with JSON
-
-    curl -v -H 'Content-Type: application/json' --data-binary '{"title": "hello", "text": "this is text"}' http://127.0.0.1:8080/note
-
-Create with attachments
-
-    curl -v -F title=hello -F text="this is text" -F file1=@file1 -F file2=@file2 http://127.0.0.1:8080/note
-
-### Update note
-
-    PUT /note/{note ID}
-
-Returns `303 See Other` with public link (old) in header `Location`.
-
-**Example**
-
-Update note (id: `b6/22/7f/2ce9505bef907fa98075f852b6`) with basic form
-
-    curl -X PUT -v -d 'title=hello&text=this is another text' http://127.0.0.1:8080/note/b6/22/7f/2ce9505bef907fa98075f852b6
-
-### Delete note
-
-    DELETE /note/{note ID}
-
-Returns `204 No Content`
-
-**Example**
-
-Delete note (id: `b6/22/7f/2ce9505bef907fa98075f852b6`)
-
-    curl -X DELETE -v http://127.0.0.1:8080/note/b6/22/7f/2ce9505bef907fa98075f852b6
+    curl -v -F title=hello -F text=world -F f=@somefile.pdf http://127.0.0.1:8080/notes?token=deadbeaf
 
 
 ## Sample note

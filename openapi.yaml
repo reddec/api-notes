@@ -1,0 +1,115 @@
+openapi: "3.0.1"
+info:
+  title: API Notes
+  version: "1"
+  description: API-First notes publishing
+
+servers:
+  - url: /
+
+security:
+  - HeaderAuth: [ ]
+  - QueryAuth: []
+paths:
+  /notes:
+    post:
+      operationId: createNote
+      summary: Create new note
+      requestBody:
+        description: Note draft
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/draft"
+      responses:
+        200:
+          description: Note created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/note"
+
+  /note/{id}:
+    put:
+      operationId: updateNote
+      summary: Update existent note
+      parameters:
+        - in: path
+          name: id
+          description: Note ID
+          schema:
+            type: string
+            example: deadbeaf
+          required: true
+      requestBody:
+        description: Note draft
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/draft"
+      responses:
+        204:
+          description: Note updated
+
+    delete:
+      operationId: deleteNote
+      summary: Remove existent note
+      parameters:
+        - in: path
+          name: id
+          description: Note ID
+          schema:
+            type: string
+            example: deadbeaf
+          required: true
+      responses:
+        204:
+          description: Note removed
+
+components:
+  schemas:
+    draft:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Note title
+          example: Hello world!
+        text:
+          type: string
+          description: Note body
+          example: This is long text
+        attachment:
+          type: array
+          description: File attachment
+          items:
+            type: string
+            format: binary
+      required:
+        - title
+        - text
+
+    note:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique note ID
+          example: deadbeaf
+        public_url:
+          type: string
+          description: Public URL
+          example: https://example.com/note/a/b/c/deadbeaf
+      required:
+        - id
+        - public_url
+
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+    QueryAuth:
+      type: apiKey
+      in: query
+      name: token
