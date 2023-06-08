@@ -7,7 +7,7 @@ The service exposes minimal API for upload markdown (with attachments) and rende
 The generated link is 16-bytes randomly generated and can be shared relatively safely.
 
 The API-Notes is NOT serving notes - any reverse proxy must do it. With authorization if needed.
-See [docker-compose.yaml].
+See [docker-compose.yaml](docker-compose.yaml).
 
 Supported markdown extensions:
 
