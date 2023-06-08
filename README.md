@@ -49,6 +49,9 @@ Differences in docker version
 
 ## API
 
+- [OpenAPI spec](openapi.yaml)
+- [Live docs](https://elements-demo.stoplight.io/?spec=https://raw.githubusercontent.com/reddec/api-notes/master/openapi.yaml)
+
 ### Example
 
 Create note
