@@ -22,13 +22,22 @@ type Server struct {
 
 func (srv *Server) CreateNote(ctx context.Context, req *api.DraftMultipart) (*api.Note, error) {
 	id := storage.GenID()
-	if err := srv.storeNote(ctx, req, id); err != nil {
+	pid := storage.ShardedPath(id)
+	if err := srv.storeNote(ctx, req, pid); err != nil {
 		return nil, err
 	}
 	return &api.Note{
-		ID:        id,
-		PublicURL: path.Join(srv.BaseURL, id),
+		ID:        api.ID(id),
+		PublicURL: path.Join(srv.BaseURL, pid),
 	}, nil
+}
+
+func (srv *Server) DeleteNote(ctx context.Context, params api.DeleteNoteParams) error {
+	return srv.Storage.Delete(ctx, storage.ShardedPath(string(params.ID)))
+}
+
+func (srv *Server) UpdateNote(ctx context.Context, req *api.DraftMultipart, params api.UpdateNoteParams) error {
+	return srv.storeNote(ctx, req, storage.ShardedPath(string(params.ID)))
 }
 
 func (srv *Server) storeNote(ctx context.Context, req *api.DraftMultipart, id string) error {
@@ -58,12 +67,4 @@ func (srv *Server) storeNote(ctx context.Context, req *api.DraftMultipart, id st
 		}
 	}
 	return nil
-}
-
-func (srv *Server) DeleteNote(ctx context.Context, params api.DeleteNoteParams) error {
-	return srv.Storage.Delete(ctx, params.ID)
-}
-
-func (srv *Server) UpdateNote(ctx context.Context, req *api.DraftMultipart, params api.UpdateNoteParams) error {
-	return srv.storeNote(ctx, req, params.ID)
 }

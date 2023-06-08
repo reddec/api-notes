@@ -25,7 +25,7 @@ func GenID() string {
 	if err != nil {
 		panic(err)
 	}
-	return shardedPath(hex.EncodeToString(uid[:]))
+	return hex.EncodeToString(uid[:])
 }
 
 func IsValidID(value string) bool {
@@ -33,6 +33,6 @@ func IsValidID(value string) bool {
 	return err == nil && len(v) == idSize
 }
 
-func shardedPath(value string) string {
+func ShardedPath(value string) string {
 	return filepath.Join(value[0:2], value[2:4], value[4:6], value[6:])
 }

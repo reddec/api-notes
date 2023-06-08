@@ -51,8 +51,7 @@ paths:
           name: id
           description: Note ID
           schema:
-            type: string
-            example: deadbeaf
+            $ref: '#/components/schemas/id'
           required: true
       requestBody:
         description: Note draft
@@ -74,8 +73,7 @@ paths:
           name: id
           description: Note ID
           schema:
-            type: string
-            example: deadbeaf
+            $ref: '#/components/schemas/id'
           required: true
       responses:
         204:
@@ -83,6 +81,11 @@ paths:
 
 components:
   schemas:
+    id:
+      type: string
+      description: Unique note ID
+      pattern: '^[a-zA-Z0-9]{32}$'
+      example: deadbeaf
     draft:
       type: object
       properties:
@@ -116,9 +119,7 @@ components:
       type: object
       properties:
         id:
-          type: string
-          description: Unique note ID
-          example: deadbeaf
+          $ref: '#/components/schemas/id'
         public_url:
           type: string
           description: Public URL

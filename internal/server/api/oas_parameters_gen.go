@@ -18,7 +18,7 @@ import (
 // DeleteNoteParams is parameters of deleteNote operation.
 type DeleteNoteParams struct {
 	// Note ID.
-	ID string
+	ID ID
 }
 
 func unpackDeleteNoteParams(packed middleware.Parameters) (params DeleteNoteParams) {
@@ -27,7 +27,7 @@ func unpackDeleteNoteParams(packed middleware.Parameters) (params DeleteNotePara
 			Name: "id",
 			In:   "path",
 		}
-		params.ID = packed[key].(string)
+		params.ID = packed[key].(ID)
 	}
 	return params
 }
@@ -52,17 +52,32 @@ func decodeDeleteNoteParams(args [1]string, argsEscaped bool, r *http.Request) (
 			})
 
 			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
+				var paramsDotIDVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotIDVal = c
+					return nil
+				}(); err != nil {
 					return err
 				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
+				params.ID = ID(paramsDotIDVal)
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := params.ID.Validate(); err != nil {
 					return err
 				}
-
-				params.ID = c
 				return nil
 			}(); err != nil {
 				return err
@@ -84,7 +99,7 @@ func decodeDeleteNoteParams(args [1]string, argsEscaped bool, r *http.Request) (
 // UpdateNoteParams is parameters of updateNote operation.
 type UpdateNoteParams struct {
 	// Note ID.
-	ID string
+	ID ID
 }
 
 func unpackUpdateNoteParams(packed middleware.Parameters) (params UpdateNoteParams) {
@@ -93,7 +108,7 @@ func unpackUpdateNoteParams(packed middleware.Parameters) (params UpdateNotePara
 			Name: "id",
 			In:   "path",
 		}
-		params.ID = packed[key].(string)
+		params.ID = packed[key].(ID)
 	}
 	return params
 }
@@ -118,17 +133,32 @@ func decodeUpdateNoteParams(args [1]string, argsEscaped bool, r *http.Request) (
 			})
 
 			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
+				var paramsDotIDVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotIDVal = c
+					return nil
+				}(); err != nil {
 					return err
 				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
+				params.ID = ID(paramsDotIDVal)
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := params.ID.Validate(); err != nil {
 					return err
 				}
-
-				params.ID = c
 				return nil
 			}(); err != nil {
 				return err

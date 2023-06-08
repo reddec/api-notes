@@ -87,16 +87,17 @@ func (s *HeaderAuth) SetAPIKey(val string) {
 	s.APIKey = val
 }
 
+type ID string
+
 // Ref: #/components/schemas/note
 type Note struct {
-	// Unique note ID.
-	ID string `json:"id"`
+	ID ID `json:"id"`
 	// Public URL.
 	PublicURL string `json:"public_url"`
 }
 
 // GetID returns the value of ID.
-func (s *Note) GetID() string {
+func (s *Note) GetID() ID {
 	return s.ID
 }
 
@@ -106,7 +107,7 @@ func (s *Note) GetPublicURL() string {
 }
 
 // SetID sets the value of ID.
-func (s *Note) SetID(val string) {
+func (s *Note) SetID(val ID) {
 	s.ID = val
 }
 
