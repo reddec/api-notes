@@ -69,16 +69,21 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 
 // CreateNote invokes createNote operation.
 //
-// Create new note.
+// Create new note from draft with (optional) attachments.
+// Returns public URL and unique ID.
+// Consumer should not make any assumptions about ID and treat it as
+// arbitrary string with variable reasonable length.
+// Attachments with name index.html will be ignored.
+// Note can use relative reference to attachments as-is.
 //
 // POST /notes
-func (c *Client) CreateNote(ctx context.Context, request OptDraftMultipart) (*Note, error) {
+func (c *Client) CreateNote(ctx context.Context, request *DraftMultipart) (*Note, error) {
 	res, err := c.sendCreateNote(ctx, request)
 	_ = res
 	return res, err
 }
 
-func (c *Client) sendCreateNote(ctx context.Context, request OptDraftMultipart) (res *Note, err error) {
+func (c *Client) sendCreateNote(ctx context.Context, request *DraftMultipart) (res *Note, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("createNote"),
 	}
@@ -187,7 +192,7 @@ func (c *Client) sendCreateNote(ctx context.Context, request OptDraftMultipart) 
 
 // DeleteNote invokes deleteNote operation.
 //
-// Remove existent note.
+// Remove existent note and all attachments.
 //
 // DELETE /note/{id}
 func (c *Client) DeleteNote(ctx context.Context, params DeleteNoteParams) error {
@@ -320,16 +325,17 @@ func (c *Client) sendDeleteNote(ctx context.Context, params DeleteNoteParams) (r
 
 // UpdateNote invokes updateNote operation.
 //
-// Update existent note.
+// Update existent note by ID.
+// Old attachments may not be removed, but could be replaced.
 //
 // PUT /note/{id}
-func (c *Client) UpdateNote(ctx context.Context, request OptDraftMultipart, params UpdateNoteParams) error {
+func (c *Client) UpdateNote(ctx context.Context, request *DraftMultipart, params UpdateNoteParams) error {
 	res, err := c.sendUpdateNote(ctx, request, params)
 	_ = res
 	return err
 }
 
-func (c *Client) sendUpdateNote(ctx context.Context, request OptDraftMultipart, params UpdateNoteParams) (res *UpdateNoteNoContent, err error) {
+func (c *Client) sendUpdateNote(ctx context.Context, request *DraftMultipart, params UpdateNoteParams) (res *UpdateNoteNoContent, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("updateNote"),
 	}

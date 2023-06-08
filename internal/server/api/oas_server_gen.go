@@ -10,22 +10,28 @@ import (
 type Handler interface {
 	// CreateNote implements createNote operation.
 	//
-	// Create new note.
+	// Create new note from draft with (optional) attachments.
+	// Returns public URL and unique ID.
+	// Consumer should not make any assumptions about ID and treat it as
+	// arbitrary string with variable reasonable length.
+	// Attachments with name index.html will be ignored.
+	// Note can use relative reference to attachments as-is.
 	//
 	// POST /notes
-	CreateNote(ctx context.Context, req OptDraftMultipart) (*Note, error)
+	CreateNote(ctx context.Context, req *DraftMultipart) (*Note, error)
 	// DeleteNote implements deleteNote operation.
 	//
-	// Remove existent note.
+	// Remove existent note and all attachments.
 	//
 	// DELETE /note/{id}
 	DeleteNote(ctx context.Context, params DeleteNoteParams) error
 	// UpdateNote implements updateNote operation.
 	//
-	// Update existent note.
+	// Update existent note by ID.
+	// Old attachments may not be removed, but could be replaced.
 	//
 	// PUT /note/{id}
-	UpdateNote(ctx context.Context, req OptDraftMultipart, params UpdateNoteParams) error
+	UpdateNote(ctx context.Context, req *DraftMultipart, params UpdateNoteParams) error
 }
 
 // Server implements http server based on OpenAPI v3 specification and

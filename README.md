@@ -56,7 +56,7 @@ Differences in docker version
 
 Create note
 
-    curl -v -F title=hello -F text=world -F f=@somefile.pdf http://127.0.0.1:8080/notes?token=deadbeaf
+    curl -v -F title=hello -F text=world -F attachment=@somefile.pdf http://127.0.0.1:8080/notes?token=deadbeaf
 
 
 ## Sample note

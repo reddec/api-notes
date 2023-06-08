@@ -27,6 +27,7 @@ paths:
         Note can use relative reference to attachments as-is.
       requestBody:
         description: Note draft
+        required: true
         content:
           multipart/form-data:
             schema:
@@ -55,6 +56,7 @@ paths:
           required: true
       requestBody:
         description: Note draft
+        required: true
         content:
           multipart/form-data:
             schema:
@@ -92,6 +94,10 @@ components:
           type: string
           description: Note body
           example: This is long text
+        hide_attachments:
+          type: boolean
+          default: false
+          description: Do not make list of attachments
         attachment:
           type: array
           description: File attachment

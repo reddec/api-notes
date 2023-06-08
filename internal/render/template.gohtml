@@ -12,6 +12,19 @@
         <h1>{{.Title}}</h1>
         {{.HTML}}
     </article>
+    {{- with .Attachments}}
+        <article>
+            <h6>Attachments</h6>
+            <ul>
+                {{- range .}}
+                    <li><a href="{{.}}" download="{{.}}">{{.}}</a></li>
+                {{- end}}
+            </ul>
+        </article>
+    {{- end}}
+    <footer>
+        <p>{{now.UTC.Format "02 Jan 2006 15:04:05"}} UTC</p>
+    </footer>
 </main>
 </body>
 <style>

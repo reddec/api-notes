@@ -15,6 +15,8 @@ type DraftMultipart struct {
 	Title string `json:"title"`
 	// Note body.
 	Text string `json:"text"`
+	// Do not make list of attachments.
+	HideAttachments OptBool `json:"hide_attachments"`
 	// File attachment.
 	Attachment []ht.MultipartFile `json:"attachment"`
 }
@@ -27,6 +29,11 @@ func (s *DraftMultipart) GetTitle() string {
 // GetText returns the value of Text.
 func (s *DraftMultipart) GetText() string {
 	return s.Text
+}
+
+// GetHideAttachments returns the value of HideAttachments.
+func (s *DraftMultipart) GetHideAttachments() OptBool {
+	return s.HideAttachments
 }
 
 // GetAttachment returns the value of Attachment.
@@ -42,6 +49,11 @@ func (s *DraftMultipart) SetTitle(val string) {
 // SetText sets the value of Text.
 func (s *DraftMultipart) SetText(val string) {
 	s.Text = val
+}
+
+// SetHideAttachments sets the value of HideAttachments.
+func (s *DraftMultipart) SetHideAttachments(val OptBool) {
+	s.HideAttachments = val
 }
 
 // SetAttachment sets the value of Attachment.
@@ -91,38 +103,38 @@ func (s *Note) SetPublicURL(val string) {
 	s.PublicURL = val
 }
 
-// NewOptDraftMultipart returns new OptDraftMultipart with value set to v.
-func NewOptDraftMultipart(v DraftMultipart) OptDraftMultipart {
-	return OptDraftMultipart{
+// NewOptBool returns new OptBool with value set to v.
+func NewOptBool(v bool) OptBool {
+	return OptBool{
 		Value: v,
 		Set:   true,
 	}
 }
 
-// OptDraftMultipart is optional DraftMultipart.
-type OptDraftMultipart struct {
-	Value DraftMultipart
+// OptBool is optional bool.
+type OptBool struct {
+	Value bool
 	Set   bool
 }
 
-// IsSet returns true if OptDraftMultipart was set.
-func (o OptDraftMultipart) IsSet() bool { return o.Set }
+// IsSet returns true if OptBool was set.
+func (o OptBool) IsSet() bool { return o.Set }
 
 // Reset unsets value.
-func (o *OptDraftMultipart) Reset() {
-	var v DraftMultipart
+func (o *OptBool) Reset() {
+	var v bool
 	o.Value = v
 	o.Set = false
 }
 
 // SetTo sets value to v.
-func (o *OptDraftMultipart) SetTo(v DraftMultipart) {
+func (o *OptBool) SetTo(v bool) {
 	o.Set = true
 	o.Value = v
 }
 
 // Get returns value and boolean that denotes whether value was set.
-func (o OptDraftMultipart) Get() (v DraftMultipart, ok bool) {
+func (o OptBool) Get() (v bool, ok bool) {
 	if !o.Set {
 		return v, false
 	}
@@ -130,7 +142,7 @@ func (o OptDraftMultipart) Get() (v DraftMultipart, ok bool) {
 }
 
 // Or returns value if set, or given parameter if does not.
-func (o OptDraftMultipart) Or(d DraftMultipart) DraftMultipart {
+func (o OptBool) Or(d bool) bool {
 	if v, ok := o.Get(); ok {
 		return v
 	}

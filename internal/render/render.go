@@ -7,6 +7,7 @@ import (
 	"html/template"
 
 	embed "github.com/13rac1/goldmark-embed"
+	"github.com/Masterminds/sprig"
 	mathjax "github.com/litao91/goldmark-mathjax"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
@@ -23,7 +24,7 @@ var style string
 var templateContent string
 
 func New() *Renderer {
-	t := template.Must(template.New("").Parse(templateContent))
+	t := template.Must(template.New("").Funcs(sprig.HtmlFuncMap()).Parse(templateContent))
 	return &Renderer{
 		page: t,
 		engine: goldmark.New(goldmark.WithExtensions(
@@ -49,15 +50,16 @@ type Renderer struct {
 	engine goldmark.Markdown
 }
 
-func (r *Renderer) Render(title, content string) ([]byte, error) {
+func (r *Renderer) Render(title, content string, attachments []string) ([]byte, error) {
 	var out bytes.Buffer
 	if err := r.engine.Convert([]byte(content), &out); err != nil {
 		return nil, fmt.Errorf("render: %w", err)
 	}
 	vd := &viewData{
-		Title: title,
-		Style: template.CSS(style),
-		HTML:  template.HTML(out.String()),
+		Title:       title,
+		Style:       template.CSS(style),
+		HTML:        template.HTML(out.String()),
+		Attachments: attachments,
 	}
 	var page bytes.Buffer
 	err := r.page.Execute(&page, vd)
@@ -68,7 +70,8 @@ func (r *Renderer) Render(title, content string) ([]byte, error) {
 }
 
 type viewData struct {
-	Title string
-	Style template.CSS
-	HTML  template.HTML
+	Title       string
+	Attachments []string
+	Style       template.CSS
+	HTML        template.HTML
 }

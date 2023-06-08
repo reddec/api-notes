@@ -15,15 +15,11 @@ import (
 )
 
 func encodeCreateNoteRequest(
-	req OptDraftMultipart,
+	req *DraftMultipart,
 	r *http.Request,
 ) error {
 	const contentType = "multipart/form-data"
-	if !req.Set {
-		// Keep request with empty body if value is not set.
-		return nil
-	}
-	request := req.Value
+	request := req
 
 	q := uri.NewQueryEncoder()
 	{
@@ -48,6 +44,22 @@ func encodeCreateNoteRequest(
 		}
 		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
 			return e.EncodeValue(conv.StringToString(request.Text))
+		}); err != nil {
+			return errors.Wrap(err, "encode query")
+		}
+	}
+	{
+		// Encode "hide_attachments" form field.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "hide_attachments",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := request.HideAttachments.Get(); ok {
+				return e.EncodeValue(conv.BoolToString(val))
+			}
+			return nil
 		}); err != nil {
 			return errors.Wrap(err, "encode query")
 		}
@@ -73,15 +85,11 @@ func encodeCreateNoteRequest(
 }
 
 func encodeUpdateNoteRequest(
-	req OptDraftMultipart,
+	req *DraftMultipart,
 	r *http.Request,
 ) error {
 	const contentType = "multipart/form-data"
-	if !req.Set {
-		// Keep request with empty body if value is not set.
-		return nil
-	}
-	request := req.Value
+	request := req
 
 	q := uri.NewQueryEncoder()
 	{
@@ -106,6 +114,22 @@ func encodeUpdateNoteRequest(
 		}
 		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
 			return e.EncodeValue(conv.StringToString(request.Text))
+		}); err != nil {
+			return errors.Wrap(err, "encode query")
+		}
+	}
+	{
+		// Encode "hide_attachments" form field.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "hide_attachments",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := request.HideAttachments.Get(); ok {
+				return e.EncodeValue(conv.BoolToString(val))
+			}
+			return nil
 		}); err != nil {
 			return errors.Wrap(err, "encode query")
 		}

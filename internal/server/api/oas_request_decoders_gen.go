@@ -17,7 +17,7 @@ import (
 )
 
 func (s *Server) decodeCreateNoteRequest(r *http.Request) (
-	req OptDraftMultipart,
+	req *DraftMultipart,
 	close func() error,
 	rerr error,
 ) {
@@ -36,9 +36,6 @@ func (s *Server) decodeCreateNoteRequest(r *http.Request) (
 			rerr = multierr.Append(rerr, close())
 		}
 	}()
-	if _, ok := r.Header["Content-Type"]; !ok && r.ContentLength == 0 {
-		return req, close, nil
-	}
 	ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
 		return req, close, errors.Wrap(err, "parse media type")
@@ -46,7 +43,7 @@ func (s *Server) decodeCreateNoteRequest(r *http.Request) (
 	switch {
 	case ct == "multipart/form-data":
 		if r.ContentLength == 0 {
-			return req, close, nil
+			return req, close, validate.ErrBodyRequired
 		}
 		if err := r.ParseMultipartForm(s.cfg.MaxMultipartMemory); err != nil {
 			return req, close, errors.Wrap(err, "parse multipart form")
@@ -60,100 +57,125 @@ func (s *Server) decodeCreateNoteRequest(r *http.Request) (
 		form := url.Values(r.MultipartForm.Value)
 		_ = form
 
-		var request OptDraftMultipart
+		var request DraftMultipart
+		q := uri.NewQueryDecoder(form)
 		{
-			var optForm DraftMultipart
-			q := uri.NewQueryDecoder(form)
-			{
-				cfg := uri.QueryParameterDecodingConfig{
-					Name:    "title",
-					Style:   uri.QueryStyleForm,
-					Explode: true,
-				}
-				if err := q.HasParam(cfg); err == nil {
-					if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
-						val, err := d.DecodeValue()
-						if err != nil {
-							return err
-						}
-
-						c, err := conv.ToString(val)
-						if err != nil {
-							return err
-						}
-
-						optForm.Title = c
-						return nil
-					}); err != nil {
-						return req, close, errors.Wrap(err, "decode \"title\"")
-					}
-				} else {
-					return req, close, errors.Wrap(err, "query")
-				}
+			cfg := uri.QueryParameterDecodingConfig{
+				Name:    "title",
+				Style:   uri.QueryStyleForm,
+				Explode: true,
 			}
-			{
-				cfg := uri.QueryParameterDecodingConfig{
-					Name:    "text",
-					Style:   uri.QueryStyleForm,
-					Explode: true,
-				}
-				if err := q.HasParam(cfg); err == nil {
-					if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
-						val, err := d.DecodeValue()
-						if err != nil {
-							return err
-						}
-
-						c, err := conv.ToString(val)
-						if err != nil {
-							return err
-						}
-
-						optForm.Text = c
-						return nil
-					}); err != nil {
-						return req, close, errors.Wrap(err, "decode \"text\"")
+			if err := q.HasParam(cfg); err == nil {
+				if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
 					}
-				} else {
-					return req, close, errors.Wrap(err, "query")
-				}
-			}
-			{
-				if err := func() error {
-					files, ok := r.MultipartForm.File["attachment"]
-					_ = ok
-					optForm.Attachment = make([]ht.MultipartFile, 0, len(files))
-					for _, fh := range files {
-						f, err := fh.Open()
-						if err != nil {
-							return errors.Wrap(err, "open")
-						}
-						closers = append(closers, f.Close)
 
-						optForm.Attachment = append(optForm.Attachment, ht.MultipartFile{
-							Name:   fh.Filename,
-							File:   f,
-							Header: fh.Header,
-						})
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
 					}
+
+					request.Title = c
 					return nil
-				}(); err != nil {
-					return req, close, errors.Wrap(err, "decode \"attachment\"")
+				}); err != nil {
+					return req, close, errors.Wrap(err, "decode \"title\"")
 				}
-			}
-			request = OptDraftMultipart{
-				Value: optForm,
-				Set:   true,
+			} else {
+				return req, close, errors.Wrap(err, "query")
 			}
 		}
-		return request, close, nil
+		{
+			cfg := uri.QueryParameterDecodingConfig{
+				Name:    "text",
+				Style:   uri.QueryStyleForm,
+				Explode: true,
+			}
+			if err := q.HasParam(cfg); err == nil {
+				if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					request.Text = c
+					return nil
+				}); err != nil {
+					return req, close, errors.Wrap(err, "decode \"text\"")
+				}
+			} else {
+				return req, close, errors.Wrap(err, "query")
+			}
+		}
+		{
+			cfg := uri.QueryParameterDecodingConfig{
+				Name:    "hide_attachments",
+				Style:   uri.QueryStyleForm,
+				Explode: true,
+			}
+			if err := q.HasParam(cfg); err == nil {
+				if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+					var requestDotHideAttachmentsVal bool
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToBool(val)
+						if err != nil {
+							return err
+						}
+
+						requestDotHideAttachmentsVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					request.HideAttachments.SetTo(requestDotHideAttachmentsVal)
+					return nil
+				}); err != nil {
+					return req, close, errors.Wrap(err, "decode \"hide_attachments\"")
+				}
+			}
+		}
+		{
+			if err := func() error {
+				files, ok := r.MultipartForm.File["attachment"]
+				_ = ok
+				request.Attachment = make([]ht.MultipartFile, 0, len(files))
+				for _, fh := range files {
+					f, err := fh.Open()
+					if err != nil {
+						return errors.Wrap(err, "open")
+					}
+					closers = append(closers, f.Close)
+
+					request.Attachment = append(request.Attachment, ht.MultipartFile{
+						Name:   fh.Filename,
+						File:   f,
+						Header: fh.Header,
+					})
+				}
+				return nil
+			}(); err != nil {
+				return req, close, errors.Wrap(err, "decode \"attachment\"")
+			}
+		}
+		return &request, close, nil
 	default:
 		return req, close, validate.InvalidContentType(ct)
 	}
 }
 
 func (s *Server) decodeUpdateNoteRequest(r *http.Request) (
-	req OptDraftMultipart,
+	req *DraftMultipart,
 	close func() error,
 	rerr error,
 ) {
@@ -172,9 +194,6 @@ func (s *Server) decodeUpdateNoteRequest(r *http.Request) (
 			rerr = multierr.Append(rerr, close())
 		}
 	}()
-	if _, ok := r.Header["Content-Type"]; !ok && r.ContentLength == 0 {
-		return req, close, nil
-	}
 	ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
 		return req, close, errors.Wrap(err, "parse media type")
@@ -182,7 +201,7 @@ func (s *Server) decodeUpdateNoteRequest(r *http.Request) (
 	switch {
 	case ct == "multipart/form-data":
 		if r.ContentLength == 0 {
-			return req, close, nil
+			return req, close, validate.ErrBodyRequired
 		}
 		if err := r.ParseMultipartForm(s.cfg.MaxMultipartMemory); err != nil {
 			return req, close, errors.Wrap(err, "parse multipart form")
@@ -196,93 +215,118 @@ func (s *Server) decodeUpdateNoteRequest(r *http.Request) (
 		form := url.Values(r.MultipartForm.Value)
 		_ = form
 
-		var request OptDraftMultipart
+		var request DraftMultipart
+		q := uri.NewQueryDecoder(form)
 		{
-			var optForm DraftMultipart
-			q := uri.NewQueryDecoder(form)
-			{
-				cfg := uri.QueryParameterDecodingConfig{
-					Name:    "title",
-					Style:   uri.QueryStyleForm,
-					Explode: true,
-				}
-				if err := q.HasParam(cfg); err == nil {
-					if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
-						val, err := d.DecodeValue()
-						if err != nil {
-							return err
-						}
-
-						c, err := conv.ToString(val)
-						if err != nil {
-							return err
-						}
-
-						optForm.Title = c
-						return nil
-					}); err != nil {
-						return req, close, errors.Wrap(err, "decode \"title\"")
-					}
-				} else {
-					return req, close, errors.Wrap(err, "query")
-				}
+			cfg := uri.QueryParameterDecodingConfig{
+				Name:    "title",
+				Style:   uri.QueryStyleForm,
+				Explode: true,
 			}
-			{
-				cfg := uri.QueryParameterDecodingConfig{
-					Name:    "text",
-					Style:   uri.QueryStyleForm,
-					Explode: true,
-				}
-				if err := q.HasParam(cfg); err == nil {
-					if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
-						val, err := d.DecodeValue()
-						if err != nil {
-							return err
-						}
-
-						c, err := conv.ToString(val)
-						if err != nil {
-							return err
-						}
-
-						optForm.Text = c
-						return nil
-					}); err != nil {
-						return req, close, errors.Wrap(err, "decode \"text\"")
+			if err := q.HasParam(cfg); err == nil {
+				if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
 					}
-				} else {
-					return req, close, errors.Wrap(err, "query")
-				}
-			}
-			{
-				if err := func() error {
-					files, ok := r.MultipartForm.File["attachment"]
-					_ = ok
-					optForm.Attachment = make([]ht.MultipartFile, 0, len(files))
-					for _, fh := range files {
-						f, err := fh.Open()
-						if err != nil {
-							return errors.Wrap(err, "open")
-						}
-						closers = append(closers, f.Close)
 
-						optForm.Attachment = append(optForm.Attachment, ht.MultipartFile{
-							Name:   fh.Filename,
-							File:   f,
-							Header: fh.Header,
-						})
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
 					}
+
+					request.Title = c
 					return nil
-				}(); err != nil {
-					return req, close, errors.Wrap(err, "decode \"attachment\"")
+				}); err != nil {
+					return req, close, errors.Wrap(err, "decode \"title\"")
 				}
-			}
-			request = OptDraftMultipart{
-				Value: optForm,
-				Set:   true,
+			} else {
+				return req, close, errors.Wrap(err, "query")
 			}
 		}
-		return request, close, nil
+		{
+			cfg := uri.QueryParameterDecodingConfig{
+				Name:    "text",
+				Style:   uri.QueryStyleForm,
+				Explode: true,
+			}
+			if err := q.HasParam(cfg); err == nil {
+				if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					request.Text = c
+					return nil
+				}); err != nil {
+					return req, close, errors.Wrap(err, "decode \"text\"")
+				}
+			} else {
+				return req, close, errors.Wrap(err, "query")
+			}
+		}
+		{
+			cfg := uri.QueryParameterDecodingConfig{
+				Name:    "hide_attachments",
+				Style:   uri.QueryStyleForm,
+				Explode: true,
+			}
+			if err := q.HasParam(cfg); err == nil {
+				if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+					var requestDotHideAttachmentsVal bool
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToBool(val)
+						if err != nil {
+							return err
+						}
+
+						requestDotHideAttachmentsVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					request.HideAttachments.SetTo(requestDotHideAttachmentsVal)
+					return nil
+				}); err != nil {
+					return req, close, errors.Wrap(err, "decode \"hide_attachments\"")
+				}
+			}
+		}
+		{
+			if err := func() error {
+				files, ok := r.MultipartForm.File["attachment"]
+				_ = ok
+				request.Attachment = make([]ht.MultipartFile, 0, len(files))
+				for _, fh := range files {
+					f, err := fh.Open()
+					if err != nil {
+						return errors.Wrap(err, "open")
+					}
+					closers = append(closers, f.Close)
+
+					request.Attachment = append(request.Attachment, ht.MultipartFile{
+						Name:   fh.Filename,
+						File:   f,
+						Header: fh.Header,
+					})
+				}
+				return nil
+			}(); err != nil {
+				return req, close, errors.Wrap(err, "decode \"attachment\"")
+			}
+		}
+		return &request, close, nil
 	default:
 		return req, close, validate.InvalidContentType(ct)
 	}

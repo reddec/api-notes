@@ -20,7 +20,12 @@ import (
 
 // handleCreateNoteRequest handles createNote operation.
 //
-// Create new note.
+// Create new note from draft with (optional) attachments.
+// Returns public URL and unique ID.
+// Consumer should not make any assumptions about ID and treat it as
+// arbitrary string with variable reasonable length.
+// Attachments with name index.html will be ignored.
+// Note can use relative reference to attachments as-is.
 //
 // POST /notes
 func (s *Server) handleCreateNoteRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
@@ -149,7 +154,7 @@ func (s *Server) handleCreateNoteRequest(args [0]string, argsEscaped bool, w htt
 		}
 
 		type (
-			Request  = OptDraftMultipart
+			Request  = *DraftMultipart
 			Params   = struct{}
 			Response = *Note
 		)
@@ -184,7 +189,7 @@ func (s *Server) handleCreateNoteRequest(args [0]string, argsEscaped bool, w htt
 
 // handleDeleteNoteRequest handles deleteNote operation.
 //
-// Remove existent note.
+// Remove existent note and all attachments.
 //
 // DELETE /note/{id}
 func (s *Server) handleDeleteNoteRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
@@ -348,7 +353,8 @@ func (s *Server) handleDeleteNoteRequest(args [1]string, argsEscaped bool, w htt
 
 // handleUpdateNoteRequest handles updateNote operation.
 //
-// Update existent note.
+// Update existent note by ID.
+// Old attachments may not be removed, but could be replaced.
 //
 // PUT /note/{id}
 func (s *Server) handleUpdateNoteRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
@@ -492,7 +498,7 @@ func (s *Server) handleUpdateNoteRequest(args [1]string, argsEscaped bool, w htt
 		}
 
 		type (
-			Request  = OptDraftMultipart
+			Request  = *DraftMultipart
 			Params   = UpdateNoteParams
 			Response = *UpdateNoteNoContent
 		)

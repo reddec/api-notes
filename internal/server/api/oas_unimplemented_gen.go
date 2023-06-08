@@ -15,16 +15,21 @@ var _ Handler = UnimplementedHandler{}
 
 // CreateNote implements createNote operation.
 //
-// Create new note.
+// Create new note from draft with (optional) attachments.
+// Returns public URL and unique ID.
+// Consumer should not make any assumptions about ID and treat it as
+// arbitrary string with variable reasonable length.
+// Attachments with name index.html will be ignored.
+// Note can use relative reference to attachments as-is.
 //
 // POST /notes
-func (UnimplementedHandler) CreateNote(ctx context.Context, req OptDraftMultipart) (r *Note, _ error) {
+func (UnimplementedHandler) CreateNote(ctx context.Context, req *DraftMultipart) (r *Note, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
 // DeleteNote implements deleteNote operation.
 //
-// Remove existent note.
+// Remove existent note and all attachments.
 //
 // DELETE /note/{id}
 func (UnimplementedHandler) DeleteNote(ctx context.Context, params DeleteNoteParams) error {
@@ -33,9 +38,10 @@ func (UnimplementedHandler) DeleteNote(ctx context.Context, params DeleteNotePar
 
 // UpdateNote implements updateNote operation.
 //
-// Update existent note.
+// Update existent note by ID.
+// Old attachments may not be removed, but could be replaced.
 //
 // PUT /note/{id}
-func (UnimplementedHandler) UpdateNote(ctx context.Context, req OptDraftMultipart, params UpdateNoteParams) error {
+func (UnimplementedHandler) UpdateNote(ctx context.Context, req *DraftMultipart, params UpdateNoteParams) error {
 	return ht.ErrNotImplemented
 }
