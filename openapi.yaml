@@ -2,19 +2,29 @@ openapi: "3.0.1"
 info:
   title: API Notes
   version: "1"
-  description: API-First notes publishing
+  description: |
+    Minimal API for upload markdown (with attachments) and render it as HTML.
+    The generated link is randomly generated and can be shared relatively safely.
 
 servers:
   - url: /
 
 security:
   - HeaderAuth: [ ]
-  - QueryAuth: []
+  - QueryAuth: [ ]
 paths:
   /notes:
     post:
       operationId: createNote
       summary: Create new note
+      description: |
+        Create new note from draft with (optional) attachments.
+        Returns public URL and unique ID.
+        Consumer should not make any assumptions about ID and treat it as
+        arbitrary string with variable reasonable length.
+        
+        Attachments with name index.html will be ignored.
+        Note can use relative reference to attachments as-is.
       requestBody:
         description: Note draft
         content:
@@ -32,7 +42,9 @@ paths:
   /note/{id}:
     put:
       operationId: updateNote
-      summary: Update existent note
+      summary: |
+        Update existent note by ID. 
+        Old attachments may not be removed, but could be replaced.
       parameters:
         - in: path
           name: id
@@ -53,7 +65,8 @@ paths:
 
     delete:
       operationId: deleteNote
-      summary: Remove existent note
+      summary: |
+        Remove existent note and all attachments.
       parameters:
         - in: path
           name: id
