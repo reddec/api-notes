@@ -15,6 +15,6 @@ $(OGEN): $(LOCALBIN)
 gen: $(OGEN)
 	go generate ./...
 	# generate public client
-	$(OGEN) --target api/client --no-server --clean  --no-webhook-client --no-webhook-server --convenient-errors=off openapi.yaml
+	$(OGEN) --target api/client --package client --no-server --clean  --no-webhook-client --no-webhook-server --convenient-errors=off openapi.yaml
 	# generate internal server
 	$(OGEN) --target internal/server/api --no-client --clean  --no-webhook-client --no-webhook-server --convenient-errors=off openapi.yaml
