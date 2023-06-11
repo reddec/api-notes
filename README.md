@@ -51,6 +51,8 @@ Differences in docker version
 
 - [OpenAPI spec](openapi.yaml)
 - [Live docs](https://elements-demo.stoplight.io/?spec=https://raw.githubusercontent.com/reddec/api-notes/master/openapi.yaml)
+- [![](https://godoc.org/github.com/reddec/api-notes/api/client?status.svg)](http://godoc.org/github.com/reddec/api-notes/api/client) generate Go API client
+
 
 ### Example
 
@@ -58,6 +60,40 @@ Create note
 
     curl -v -F author=reddec -F title=hello -F text=world -F attachment=@somefile.pdf http://127.0.0.1:8080/notes?token=deadbeaf
 
+From Go
+
+```go
+package main
+
+import (
+	"context"
+	"log"
+
+	"github.com/reddec/api-notes/api/client"
+)
+
+func main() {
+	// we assume that we are somehow passing parameters (flags, envs...)
+	const URL = "https://example.com"
+	const Token = "deadbeaf"
+	notes, err := client.NewClient(URL, client.HeaderToken(Token))
+	if err != nil {
+		// panic is used for illustration only
+		panic("create notes client: " + err.Error())
+	}
+	note, err := notes.CreateNote(context.Background(), &client.DraftMultipart{
+		Title:  "Hello",
+		Text:   "## hello world\nThis is sample text",
+		Author: client.NewOptString("demo"),
+	})
+	if err != nil {
+		panic("create note: " + err.Error())
+	}
+
+	log.Println("Note ID:", note.ID)
+	log.Println("Note URL:", note.PublicURL)
+}
+```
 
 ## Sample note
 
