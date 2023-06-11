@@ -51,7 +51,7 @@ Differences in docker version
 
 - [OpenAPI spec](openapi.yaml)
 - [Live docs](https://elements-demo.stoplight.io/?spec=https://raw.githubusercontent.com/reddec/api-notes/master/openapi.yaml)
-- [![](https://godoc.org/github.com/reddec/api-notes/api/client?status.svg)](http://godoc.org/github.com/reddec/api-notes/api/client) generate Go API client
+- [![](https://godoc.org/github.com/reddec/api-notes/api/client?status.svg)](http://godoc.org/github.com/reddec/api-notes/api/client) generated Go API client
 
 
 ### Example
