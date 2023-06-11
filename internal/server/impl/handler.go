@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/reddec/api-notes/internal/render"
 	"github.com/reddec/api-notes/internal/server/api"
@@ -28,7 +28,7 @@ func (srv *Server) CreateNote(ctx context.Context, req *api.DraftMultipart) (*ap
 	}
 	return &api.Note{
 		ID:        api.ID(id),
-		PublicURL: path.Join(srv.BaseURL, pid),
+		PublicURL: strings.TrimRight(srv.BaseURL, "/") + "/" + pid,
 	}, nil
 }
 
