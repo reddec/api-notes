@@ -6,5 +6,5 @@ ENV API_NOTES_BIND=":8080" \
     API_NOTES_PUBLIC_URL="http://127.0.0.1:8081" \
     API_NOTES_DIR="/data"
 ENTRYPOINT ["/api-notes"]
-RUN ["serve"]
+CMD ["serve"]
 ADD api-notes /
